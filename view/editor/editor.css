@@ -1,0 +1,71 @@
+body {
+  font-family: system-ui, sans-serif;
+  background: #f4f6f8;
+  margin: 0;
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 10px;
+}
+
+#toolbar {
+  margin-bottom: 15px;
+}
+
+button {
+  padding: 8px 12px;
+  margin-right: 5px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #4f46e5;
+  color: white;
+}
+
+button.secondary {
+  background: #64748b;
+}
+
+#workspace {
+  background: white;
+  border-radius: 10px;
+  padding: 15px;
+  min-height: 200px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.block {
+  background: #fde68a;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: grab;
+}
+
+.block.dragging {
+  opacity: 0.5;
+}
+
+.block select,
+.block input {
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  padding: 4px 6px;
+}
+
+.block .delete {
+  margin-left: auto;
+  background: #ef4444;
+}
+
+pre {
+  background: #0f172a;
+  color: #e5e7eb;
+  padding: 10px;
+  border-radius: 8px;
+  overflow-x: auto;
+}

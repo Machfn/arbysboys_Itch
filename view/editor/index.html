@@ -1,175 +1,316 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Scratch-Like Instruction Builder</title>
+<meta charset="UTF-8">
+<title>Scratch-Like Pin Instruction Builder</title>
 
 <style>
 body {
   font-family: system-ui, sans-serif;
-  background: #f4f6f8;
-  margin: 0;
+  background: #f1f5f9;
   padding: 20px;
 }
 
-h1 {
-  margin-bottom: 10px;
-}
-
-#toolbar {
-  margin-bottom: 15px;
-}
-
 button {
-  padding: 8px 12px;
-  margin-right: 5px;
-  border: none;
+  padding: 6px 10px;
   border-radius: 6px;
-  cursor: pointer;
+  border: none;
   background: #4f46e5;
   color: white;
+  cursor: pointer;
 }
 
-button.secondary {
-  background: #64748b;
+button.small {
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+button.danger { background: #ef4444; }
+
+select, input {
+  padding: 4px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
 }
 
 #workspace {
   background: white;
   border-radius: 10px;
   padding: 15px;
-  min-height: 200px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  min-height: 250px;
 }
 
 .block {
   background: #fde68a;
   border-radius: 10px;
-  padding: 10px;
-  margin-bottom: 10px;
+  padding: 8px;
+  margin-bottom: 8px;
   display: flex;
+  gap: 8px;
   align-items: center;
-  gap: 10px;
   cursor: grab;
 }
 
-.block.dragging {
-  opacity: 0.5;
+.block.dragging { opacity: 0.5; }
+
+.block.loop, .block.if {
+  background: #a5f3fc;
+  flex-direction: column;
+  align-items: stretch;
 }
 
-.block select,
-.block input {
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  padding: 4px 6px;
+.header {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
-.block .delete {
-  margin-left: auto;
-  background: #ef4444;
+.children {
+  margin-top: 6px;
+  padding-left: 16px;
+  border-left: 3px dashed #0284c7;
+  min-height: 20px;
+}
+
+.children.else {
+  border-color: #be123c;
+}
+
+.toolbar {
+  display: flex;
+  gap: 6px;
+  margin: 6px 0;
 }
 
 pre {
-  background: #0f172a;
+  margin-top: 20px;
+  background: #020617;
   color: #e5e7eb;
-  padding: 10px;
+  padding: 12px;
   border-radius: 8px;
-  overflow-x: auto;
 }
 </style>
 </head>
 
 <body>
 
-<h1>Scratch-Like Instruction Builder</h1>
+<h2>Scratch-Like Pin Instruction Builder</h2>
 
-<div id="toolbar">
-  <button onclick="addStep()">➕ Add Step</button>
-  <button class="secondary" onclick="exportJSON()">📦 Export JSON</button>
+<div class="toolbar">
+  <button onclick="addPinMode(workspace)">⚙ Pin Mode</button>
+  <button onclick="addPinWrite(workspace)">⚡ Pin Write</button>
+  <button onclick="addVariable(workspace)">📦 Variable</button>
+  <button onclick="addLoop(workspace)">🔁 Loop</button>
+  <button onclick="addIf(workspace)">❓ If / Else</button>
+  <button onclick="exportJSON()">⬇ Export</button>
 </div>
 
 <div id="workspace"></div>
 
-<h3>Exported Instructions</h3>
-<pre id="output">// Click "Export JSON"</pre>
+<pre id="output">// export appears here</pre>
 
 <script>
-let stepCounter = 0;
 const workspace = document.getElementById("workspace");
 
-function addStep() {
-  const id = stepCounter++;
+/* ───────── Drag & Drop ───────── */
 
-  const block = document.createElement("div");
-  block.className = "block";
-  block.draggable = true;
-  block.dataset.id = id;
+function makeDraggable(el) {
+  el.draggable = true;
+  el.addEventListener("dragstart", () => el.classList.add("dragging"));
+  el.addEventListener("dragend", () => el.classList.remove("dragging"));
+}
 
-  block.innerHTML = `
-    <strong>Step</strong>
+function enableDrop(zone) {
+  zone.addEventListener("dragover", e => {
+    e.preventDefault();
+    const dragging = document.querySelector(".dragging");
+    if (!dragging) return;
 
-    <select class="type">
-      <option value="move">Move</option>
-      <option value="wait">Wait</option>
-      <option value="say">Say</option>
+    const after = [...zone.children].find(child => {
+      const r = child.getBoundingClientRect();
+      return e.clientY < r.top + r.height / 2;
+    });
+
+    after ? zone.insertBefore(dragging, after) : zone.appendChild(dragging);
+  });
+}
+
+enableDrop(workspace);
+
+/* ───────── Block Creators ───────── */
+
+function addVariable(parent) {
+  const b = document.createElement("div");
+  b.className = "block";
+  b.innerHTML = `
+    <strong>Set</strong>
+    <input class="name" placeholder="var">
+    =
+    <input class="value" placeholder="value">
+    <button class="danger">✖</button>
+  `;
+  b.querySelector(".danger").onclick = () => b.remove();
+  makeDraggable(b);
+  parent.appendChild(b);
+}
+
+function addPinMode(parent) {
+  const b = document.createElement("div");
+  b.className = "block";
+  b.innerHTML = `
+    <strong>Pin Mode</strong>
+    pin <input class="pin" size="3">
+    <select class="mode">
+      <option value="input">INPUT</option>
+      <option value="output">OUTPUT</option>
     </select>
+    <button class="danger">✖</button>
+  `;
+  b.querySelector(".danger").onclick = () => b.remove();
+  makeDraggable(b);
+  parent.appendChild(b);
+}
 
-    <input class="value" placeholder="value" />
+function addPinWrite(parent) {
+  const b = document.createElement("div");
+  b.className = "block";
+  b.innerHTML = `
+    <strong>Pin Write</strong>
+    pin <input class="pin" size="3">
+    <select class="value">
+      <option value="on">ON</option>
+      <option value="off">OFF</option>
+    </select>
+    <button class="danger">✖</button>
+  `;
+  b.querySelector(".danger").onclick = () => b.remove();
+  makeDraggable(b);
+  parent.appendChild(b);
+}
 
-    <button class="delete">✖</button>
+function addLoop(parent) {
+  const b = document.createElement("div");
+  b.className = "block loop";
+
+  b.innerHTML = `
+    <div class="header">
+      <strong>Repeat</strong>
+      <input class="times" placeholder="times / $var">
+      <button class="danger">✖</button>
+    </div>
+    <div class="toolbar">
+      <button class="small add-pin-write">⚡</button>
+      <button class="small add-pin-mode">⚙</button>
+      <button class="small add-var">📦</button>
+      <button class="small add-if">❓</button>
+      <button class="small add-loop">🔁</button>
+    </div>
+    <div class="children"></div>
   `;
 
-  block.querySelector(".delete").onclick = () => block.remove();
+  const children = b.querySelector(".children");
 
-  addDragAndDrop(block);
-  workspace.appendChild(block);
+  b.querySelector(".danger").onclick = () => b.remove();
+  b.querySelector(".add-pin-write").onclick = () => addPinWrite(children);
+  b.querySelector(".add-pin-mode").onclick = () => addPinMode(children);
+  b.querySelector(".add-var").onclick = () => addVariable(children);
+  b.querySelector(".add-if").onclick = () => addIf(children);
+  b.querySelector(".add-loop").onclick = () => addLoop(children);
+
+  enableDrop(children);
+  makeDraggable(b);
+  parent.appendChild(b);
 }
 
-function addDragAndDrop(block) {
-  block.addEventListener("dragstart", () => {
-    block.classList.add("dragging");
-  });
+function addIf(parent) {
+  const b = document.createElement("div");
+  b.className = "block if";
 
-  block.addEventListener("dragend", () => {
-    block.classList.remove("dragging");
-  });
+  b.innerHTML = `
+    <div class="header">
+      <strong>If</strong>
+      <input class="condition" placeholder="condition / $var">
+      <button class="danger">✖</button>
+    </div>
+
+    <strong>Then</strong>
+    <div class="toolbar">
+      <button class="small then-pin">⚡</button>
+      <button class="small then-loop">🔁</button>
+    </div>
+    <div class="children then"></div>
+
+    <strong>Else</strong>
+    <div class="toolbar">
+      <button class="small else-pin">⚡</button>
+      <button class="small else-loop">🔁</button>
+    </div>
+    <div class="children else"></div>
+  `;
+
+  const thenC = b.querySelector(".then");
+  const elseC = b.querySelector(".else");
+
+  b.querySelector(".danger").onclick = () => b.remove();
+  b.querySelector(".then-pin").onclick = () => addPinWrite(thenC);
+  b.querySelector(".then-loop").onclick = () => addLoop(thenC);
+  b.querySelector(".else-pin").onclick = () => addPinWrite(elseC);
+  b.querySelector(".else-loop").onclick = () => addLoop(elseC);
+
+  enableDrop(thenC);
+  enableDrop(elseC);
+  makeDraggable(b);
+  parent.appendChild(b);
 }
 
-workspace.addEventListener("dragover", e => {
-  e.preventDefault();
-  const afterElement = getDragAfterElement(workspace, e.clientY);
-  const dragging = document.querySelector(".dragging");
-  if (!afterElement) {
-    workspace.appendChild(dragging);
-  } else {
-    workspace.insertBefore(dragging, afterElement);
-  }
-});
+/* ───────── Export ───────── */
 
-function getDragAfterElement(container, y) {
-  const blocks = [...container.querySelectorAll(".block:not(.dragging)")];
-
-  return blocks.reduce((closest, child) => {
-    const box = child.getBoundingClientRect();
-    const offset = y - box.top - box.height / 2;
-    if (offset < 0 && offset > closest.offset) {
-      return { offset: offset, element: child };
-    } else {
-      return closest;
+function parse(container) {
+  return [...container.children].map(b => {
+    if (b.classList.contains("loop")) {
+      return {
+        type: "loop",
+        times: b.querySelector(".times").value,
+        children: parse(b.querySelector(".children"))
+      };
     }
-  }, { offset: Number.NEGATIVE_INFINITY }).element;
+
+    if (b.classList.contains("if")) {
+      return {
+        type: "if",
+        condition: b.querySelector(".condition").value,
+        then: parse(b.querySelector(".then")),
+        else: parse(b.querySelector(".else"))
+      };
+    }
+
+    if (b.querySelector(".mode")) {
+      return {
+        type: "pin_mode",
+        pin: b.querySelector(".pin").value,
+        mode: b.querySelector(".mode").value
+      };
+    }
+
+    if (b.querySelector(".pin") && b.querySelector(".value")) {
+      return {
+        type: "pin_write",
+        pin: b.querySelector(".pin").value,
+        value: b.querySelector(".value").value
+      };
+    }
+
+    return {
+      type: "set_variable",
+      name: b.querySelector(".name").value,
+      value: b.querySelector(".value").value
+    };
+  });
 }
 
 function exportJSON() {
-  const steps = [...workspace.children].map((block, index) => ({
-    index,
-    id: block.dataset.id,
-    type: block.querySelector(".type").value,
-    value: block.querySelector(".value").value
-  }));
-
   document.getElementById("output").textContent =
-    JSON.stringify(steps, null, 2);
+    JSON.stringify(parse(workspace), null, 2);
 }
 </script>
 
