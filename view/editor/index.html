@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Scratch-Like Instruction Builder</title>
+
+<style>
+body {
+  font-family: system-ui, sans-serif;
+  background: #f4f6f8;
+  margin: 0;
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 10px;
+}
+
+#toolbar {
+  margin-bottom: 15px;
+}
+
+button {
+  padding: 8px 12px;
+  margin-right: 5px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #4f46e5;
+  color: white;
+}
+
+button.secondary {
+  background: #64748b;
+}
+
+#workspace {
+  background: white;
+  border-radius: 10px;
+  padding: 15px;
+  min-height: 200px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.block {
+  background: #fde68a;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: grab;
+}
+
+.block.dragging {
+  opacity: 0.5;
+}
+
+.block select,
+.block input {
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  padding: 4px 6px;
+}
+
+.block .delete {
+  margin-left: auto;
+  background: #ef4444;
+}
+
+pre {
+  background: #0f172a;
+  color: #e5e7eb;
+  padding: 10px;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Scratch-Like Instruction Builder</h1>
+
+<div id="toolbar">
+  <button onclick="addStep()">➕ Add Step</button>
+  <button class="secondary" onclick="exportJSON()">📦 Export JSON</button>
+</div>
+
+<div id="workspace"></div>
+
+<h3>Exported Instructions</h3>
+<pre id="output">// Click "Export JSON"</pre>
+
+<script>
+let stepCounter = 0;
+const workspace = document.getElementById("workspace");
+
+function addStep() {
+  const id = stepCounter++;
+
+  const block = document.createElement("div");
+  block.className = "block";
+  block.draggable = true;
+  block.dataset.id = id;
+
+  block.innerHTML = `
+    <strong>Step</strong>
+
+    <select class="type">
+      <option value="move">Move</option>
+      <option value="wait">Wait</option>
+      <option value="say">Say</option>
+    </select>
+
+    <input class="value" placeholder="value" />
+
+    <button class="delete">✖</button>
+  `;
+
+  block.querySelector(".delete").onclick = () => block.remove();
+
+  addDragAndDrop(block);
+  workspace.appendChild(block);
+}
+
+function addDragAndDrop(block) {
+  block.addEventListener("dragstart", () => {
+    block.classList.add("dragging");
+  });
+
+  block.addEventListener("dragend", () => {
+    block.classList.remove("dragging");
+  });
+}
+
+workspace.addEventListener("dragover", e => {
+  e.preventDefault();
+  const afterElement = getDragAfterElement(workspace, e.clientY);
+  const dragging = document.querySelector(".dragging");
+  if (!afterElement) {
+    workspace.appendChild(dragging);
+  } else {
+    workspace.insertBefore(dragging, afterElement);
+  }
+});
+
+function getDragAfterElement(container, y) {
+  const blocks = [...container.querySelectorAll(".block:not(.dragging)")];
+
+  return blocks.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closest.offset) {
+      return { offset: offset, element: child };
+    } else {
+      return closest;
+    }
+  }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+function exportJSON() {
+  const steps = [...workspace.children].map((block, index) => ({
+    index,
+    id: block.dataset.id,
+    type: block.querySelector(".type").value,
+    value: block.querySelector(".value").value
+  }));
+
+  document.getElementById("output").textContent =
+    JSON.stringify(steps, null, 2);
+}
+</script>
+
+</body>
+</html>
