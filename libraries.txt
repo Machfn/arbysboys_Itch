@@ -1,0 +1,6 @@
+Python:
+    pywebview
+    os
+    pyserial
+
+C++:
