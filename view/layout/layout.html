@@ -374,28 +374,28 @@
         <h3>Components (drag)</h3>
 
         <div class="sidebar-grid">
-          <div class="source-item" draggable="true" data-component="LED" data-src="LED.jpg" title="Drag LED">
+          <div class="source-item" draggable="true" data-component="LED" data-src="../../assets/LED.jpg" title="Drag LED">
             <div>
               <img src="../../assets/LED.jpg" alt="LED">
               <div class="source-cap">LED</div>
             </div>
           </div>
 
-          <div class="source-item" draggable="true" data-component="SERVO" data-src="servo.jpg" title="Drag SERVO">
+          <div class="source-item" draggable="true" data-component="SERVO" data-src="../../assets/servo.jpg" title="Drag SERVO">
             <div>
               <img src="../../assets/servo.jpg" alt="SERVO">
               <div class="source-cap">SERVO</div>
             </div>
           </div>
 
-          <div class="source-item" draggable="true" data-component="INPUT" data-src="switch.jpg" title="Drag INPUT">
+          <div class="source-item" draggable="true" data-component="INPUT" data-src="../../assets/switch.jpg" title="Drag INPUT">
             <div>
               <img src="../../assets/switch.jpg" alt="INPUT">
               <div class="source-cap">INPUT</div>
             </div>
           </div>
 
-          <div class="source-item" draggable="true" data-component="MOTOR" data-src="motor.jpg" title="Drag MOTOR">
+          <div class="source-item" draggable="true" data-component="MOTOR" data-src="../../assets/motor.jpg" title="Drag MOTOR">
             <div>
               <img src="../../assets/motor.jpg" alt="MOTOR">
               <div class="source-cap">MOTOR</div>
@@ -858,9 +858,13 @@
 
       try {
         localStorage.setItem("itch_pin_dict", JSON.stringify(payload));
-      } catch {}
+        window.location.href = "/view/editor/index.html"
 
-      alert("Next step clicked. Pin dict saved to localStorage as 'itch_pin_dict' and printed to console.");
+      } catch {
+        alert("Failure Somewher");
+      }
+
+      
       // window.location.href = "step2.html";
     });
   </script>

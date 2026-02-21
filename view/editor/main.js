@@ -1,10 +1,16 @@
 /* ───────── CONFIG ───────── */
-const SERVOS = ["arm", "camera", "gripper"];
+
+// Pull from local storage
+let lS = localStorage.getItem("itch_pin_dict");
+if (lS == null) window.alert("No Previous Setup");
+let pin_json = JSON.parse(lS);
+
+const SERVOS = pin_json[1];
 // const SERVO_PINS = {"arm" : 0, "camera" : 1}
-const MOTORS = ["leftWheel", "rightWheel", "fan"];
-const SIMPLE_OUTPUTS = ["lightbulb"]
-const OUTPUT_DEVICES = ["lcd", "oled", "logger"];
-const VARIABLES = ["speed", "angle", "temperature"];
+const MOTORS = pin_json[0];
+const SIMPLE_OUTPUTS = pin_json[3]
+const OUTPUT_DEVICES = pin_json[2];
+const VARIABLES = [];
 
 const workspace = document.getElementById("workspace");
 
@@ -63,13 +69,24 @@ function blockBase() {
   return b;
 }
 
+function makeVariable(p) {
+  const b = blockBase();
+  b.classList.add("mvar");
+  let var_name = prompt("Var name");
+  VARIABLES.push(var_name);
+  b.innerHTML = `<strong>Make Variable: <span class="name">${var_name}</span></strong>
+  <button class="danger">✖</button>`;
+  b.querySelector(".danger").onclick = () => b.remove();
+  p.appendChild(b);
+}
+
 function addVariable(p) {
   const b = blockBase();
   b.classList.add("var");
   b.innerHTML = `<strong>Set</strong>
     <select class="name">${options(VARIABLES)}</select>
     =
-    <input class="value">
+    <input type="number" class="value">
     <button class="danger">✖</button>`;
   b.querySelector(".danger").onclick = () => b.remove();
   p.appendChild(b);
@@ -79,8 +96,8 @@ function addServo(p) {
   const b = blockBase();
   b.classList.add("servo");
   b.innerHTML = `<strong>Servo</strong>
-    <select class="name">${options(SERVOS)}</select>
-    deg <input class="deg" size="4">
+    <select class="name">${options(Object.keys(SERVOS))}</select>
+    deg <input type="number" class="deg" size="4">
     <button class="danger">✖</button>`;
   b.querySelector(".danger").onclick = () => b.remove();
   p.appendChild(b);
@@ -90,7 +107,7 @@ function addMotor(p) {
   const b = blockBase();
   b.classList.add("motor")
   b.innerHTML = `<strong>Motor</strong>
-    <select class="name">${options(MOTORS)}</select>
+    <select class="name">${options(Object.keys(MOTORS))}</select>
     <select class="state"><option>on</option><option>off</option></select>
     <button class="danger">✖</button>`;
   b.querySelector(".danger").onclick = () => b.remove();
@@ -101,7 +118,7 @@ let addPin = (p) => {
     const b = blockBase();
     b.classList.add("pin");
     b.innerHTML = `<strong>Pin Output</strong>
-        <select class="name">${options(SIMPLE_OUTPUTS)}</select>
+        <select class="name">${options(Object.keys(SIMPLE_OUTPUTS))}</select>
         →
         <select class="state"><option>on</option><option>off</option></select>
         <button class="danger">✖</button>`;
@@ -114,7 +131,7 @@ function addOutput(p) {
   const b = blockBase();
   b.classList.add("output");
   b.innerHTML = `<strong>Output</strong>
-    <select class="dev">${options(OUTPUT_DEVICES)}</select>
+    <select class="dev">${options(Object.keys(OUTPUT_DEVICES))}</select>
     →
     <select class="var">${options(VARIABLES)}</select>
     <button class="danger">✖</button>`;
@@ -227,6 +244,11 @@ function parse(container) {
             pin: SIMPLE_OUTPUTS[b.querySelector(".name").value],
             value:b.querySelector(".state").value
         }
+    } else if (b.classList.contains("mvar")) {
+      return {
+        type: "define_variable",
+        name: b.querySelector(".name").innerHTML
+      }
     }
   });
 }

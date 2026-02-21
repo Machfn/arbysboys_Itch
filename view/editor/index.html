@@ -4,23 +4,47 @@
         <meta charset="UTF-8">
         <title>Scratch-Like Control Builder (Stable)</title>
         <link rel="stylesheet" href="editor.css">
+        <link rel="stylesheet" href="../../assets/nav.css">
         <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     </head>
     <body>
-    <h2>Action Builder**</h2>
-
-    <div class="toolbar">
-        <button onclick="addPin(workspace)">💡 Set Pin</button>
-        <button onclick="addServo(workspace)">🦾 Servo</button>
-        <button onclick="addMotor(workspace)">⚙ Motor</button>
-        <button onclick="addOutput(workspace)">📤 Output</button>
-        <button onclick="addVariable(workspace)">📦 Variable</button>
-        <button onclick="addLoop(workspace)">🔁 Loop</button>
-        <button onclick="addIf(workspace)">❓ If / Else</button>
-        <button onclick="exportJSON()">🐳 Export</button>
+    <nav>
+        <div class="logo">ITCH</div>
+        <ul>
+            <li><a href="../home/index.html">Home</a></li>
+            <li><a href="../layout/layout.html">ITCH Play</a></li>
+        </ul>
+    </nav>
+    <div class="content">
+        <div class="main-workspace">
+            <h2>Action Builder**</h2>
+            <div class="toolbar">
+                <button onclick="addPin(workspace)">💡 Set Pin</button>
+                <button onclick="addServo(workspace)">🦾 Servo</button>
+                <button onclick="addMotor(workspace)">⚙ Motor</button>
+                <button onclick="addOutput(workspace)">📤 Output</button>
+                <button onclick="addVariable(workspace)">🗳️ Set Variable</button>
+                <button onclick="makeVariable(workspace)">📦 Make Variable</button>
+                <button onclick="addLoop(workspace)">🔁 Loop</button>
+                <button onclick="addIf(workspace)">❓ If / Else</button>
+                <button onclick="exportJSON()">🐳 Export</button>
+            </div>
+            <div id="workspace"></div>
+            <div id="output"></div>
+        </div>
+        <div class="instructions">
+            <h2>Instructions</h2>
+            <div class="instructions-space">
+                <ul>
+                    <li>Click Actions marked in purple to add workspace</li>
+                    <li>Create your step by step program with drag and drop actions</li>
+                    <li>Click the Export button to send to Microcontroller</li>
+                </ul>
+            </div>
+        </div>
     </div>
-    <div id="workspace"></div>
-    <div id="output"></div>
+    
+
     <script src="./main.js"></script>
     </body>
 </html>
