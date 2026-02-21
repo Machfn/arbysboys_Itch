@@ -170,7 +170,7 @@
     .source-item:active{ cursor: grabbing; transform: translateY(1px); }
 
     .source-item img{
-      width: 64px;          /* smaller */
+      width: 64px;
       height: 64px;
       object-fit: contain;
       display: block;
@@ -178,7 +178,6 @@
       filter: drop-shadow(0 2px 2px rgba(0,0,0,0.10));
     }
 
-    /* Optional caption under each icon */
     .source-cap{
       margin-top: 6px;
       font-size: 11px;
@@ -208,14 +207,27 @@
       pointer-events: none;
     }
 
-    /* Default single pin position */
-    .clone .comp-pin[data-role="MAIN"]{ left: 85%; top: 20%; }
+    /* Selected clone (deletable with Backspace) */
+    .clone.selected-clone{
+      outline: 2px solid rgba(142,68,173,0.85);
+      outline-offset: 3px;
+    }
 
-    /* Motor extra pins positions */
-    .clone.motor .comp-pin[data-role="IN1"]{ left: 20%; top: 20%; }
-    .clone.motor .comp-pin[data-role="IN2"]{ left: 80%; top: 20%; }
-    .clone.motor .comp-pin[data-role="IN3"]{ left: 20%; top: 80%; }
-    .clone.motor .comp-pin[data-role="IN4"]{ left: 80%; top: 80%; }
+    /* ---- Component pin placement rules ----
+       Default: right side (useful for INPUT).
+       LED: pin at TOP.
+       SERVO: pin at BOTTOM.
+    */
+    .clone .comp-pin[data-role="MAIN"]{ left: 85%; top: 50%; } /* default */
+
+    .clone.led   .comp-pin[data-role="MAIN"]{ left: 50%; top: 10%; } /* LED TOP */
+    .clone.servo .comp-pin[data-role="MAIN"]{ left: 50%; top: 90%; } /* SERVO BOTTOM */
+
+    /* Motor pins: ALL on left side, vertical line */
+    .clone.motor .comp-pin[data-role="IN1"]{ left: 10%; top: 22%; }
+    .clone.motor .comp-pin[data-role="IN2"]{ left: 10%; top: 40%; }
+    .clone.motor .comp-pin[data-role="IN3"]{ left: 10%; top: 58%; }
+    .clone.motor .comp-pin[data-role="IN4"]{ left: 10%; top: 76%; }
 
     /* Small labels near motor pins */
     .pin-tag{
@@ -406,7 +418,7 @@
         <button id="nextStepBtn" class="next-step-btn" type="button">Go to next step</button>
 
         <div style="margin-top:10px; font-size:12px; color:#666;">
-          Select a wire, then press <strong>Backspace</strong> to delete it.
+          Drag a component and place if in the excess white space.To make a wire, select a blue dot on the component, then select a red dot on the board.Select a wire OR a component, then press <strong>Backspace</strong> to delete it.
         </div>
         <div style="margin-top:6px; font-size:12px; color:#666;">
           Console: run <code>getPinDict()</code>.
@@ -431,6 +443,9 @@
 
     let startNode = null;
     let selectedWireGroup = null;
+
+    // Selected component (clone)
+    let selectedCloneEl = null;
 
     // wireRecords: { group, aPin, bPin }
     const wireRecords = [];
@@ -471,10 +486,28 @@
     }
 
     function selectWire(group) {
+      clearCloneSelection();
+      clearNodeSelection();
+
       clearWireSelection();
       selectedWireGroup = group;
       const wire = group.querySelector(".wire");
       if (wire) wire.classList.add("selected-wire");
+    }
+
+    function clearCloneSelection() {
+      if (!selectedCloneEl) return;
+      selectedCloneEl.classList.remove("selected-clone");
+      selectedCloneEl = null;
+    }
+
+    function selectClone(cloneEl) {
+      clearWireSelection();
+      clearNodeSelection();
+
+      clearCloneSelection();
+      selectedCloneEl = cloneEl;
+      cloneEl.classList.add("selected-clone");
     }
 
     function drawX(cx, cy, size = 9) {
@@ -529,6 +562,7 @@
       pinEl.addEventListener("click", (e) => {
         e.stopPropagation();
         clearWireSelection();
+        clearCloneSelection();
 
         if (!startNode) { selectNode(pinEl); return; }
         if (pinEl === startNode) { clearNodeSelection(); return; }
@@ -549,19 +583,65 @@
     layout.addEventListener("click", () => {
       clearNodeSelection();
       clearWireSelection();
+      clearCloneSelection();
     });
+
+    function deleteWireGroup(groupEl) {
+      if (!groupEl) return;
+
+      for (let i = wireRecords.length - 1; i >= 0; i--) {
+        if (wireRecords[i].group === groupEl) wireRecords.splice(i, 1);
+      }
+      groupEl.remove();
+      if (selectedWireGroup === groupEl) selectedWireGroup = null;
+    }
+
+    function deleteCloneAndItsWires(cloneEl) {
+      if (!cloneEl) return;
+
+      // Remove any wires attached to ANY comp-pin inside this clone
+      const pins = Array.from(cloneEl.querySelectorAll(".comp-pin"));
+      for (let i = wireRecords.length - 1; i >= 0; i--) {
+        const rec = wireRecords[i];
+        if (pins.includes(rec.aPin) || pins.includes(rec.bPin)) {
+          // remove from DOM + remove from wireRecords
+          if (rec.group) rec.group.remove();
+          wireRecords.splice(i, 1);
+        }
+      }
+
+      // If startNode is one of these pins, clear it
+      if (startNode && pins.includes(startNode)) clearNodeSelection();
+
+      // Remove registry entry
+      const instanceName = cloneEl.dataset.instanceName;
+      if (instanceName) instancesByName.delete(instanceName);
+
+      // Clear selection if needed
+      if (selectedCloneEl === cloneEl) selectedCloneEl = null;
+
+      // Remove clone
+      cloneEl.remove();
+
+      // Refresh overlay sizing
+      resizeOverlay();
+    }
 
     window.addEventListener("keydown", (e) => {
       if (e.key !== "Backspace") return;
       e.preventDefault();
 
-      if (!selectedWireGroup) return;
-
-      for (let i = wireRecords.length - 1; i >= 0; i--) {
-        if (wireRecords[i].group === selectedWireGroup) wireRecords.splice(i, 1);
+      // Prefer deleting wire if a wire is selected (matches your old behavior)
+      if (selectedWireGroup) {
+        deleteWireGroup(selectedWireGroup);
+        return;
       }
-      selectedWireGroup.remove();
-      selectedWireGroup = null;
+
+      // Otherwise delete selected clone
+      if (selectedCloneEl) {
+        deleteCloneAndItsWires(selectedCloneEl);
+        return;
+      }
     });
 
     // =========================
@@ -752,9 +832,12 @@
         const tag = document.createElement("div");
         tag.className = "pin-tag";
         tag.textContent = role;
-        tag.style.left = (role === "IN1" || role === "IN3") ? "20%" : "80%";
-        tag.style.top  = (role === "IN1" || role === "IN2") ? "12%" : "88%";
-        tag.style.position = "absolute";
+
+        // Align tags with the new vertical line layout on the left
+        const topMap = { IN1: "22%", IN2: "40%", IN3: "58%", IN4: "76%" };
+tag.style.left = "22%";          // slightly to the right of the pin
+tag.style.top  = topMap[role];
+tag.style.transform = "translate(-50%, -50%)";
 
         cloneEl.appendChild(pin);
         cloneEl.appendChild(tag);
@@ -772,7 +855,9 @@
       clone.dataset.component = typeName;
       clone.dataset.instanceName = instanceName;
 
-      if (typeName === "MOTOR") clone.classList.add("motor");
+      // add type class for CSS pin placement rules
+      clone.classList.add(typeName.toLowerCase());
+      if (typeName === "MOTOR") clone.classList.add("motor"); // keep existing motor class too
 
       const W = 150, H = 150;
       clone.style.left = `${x - W / 2}px`;
@@ -802,6 +887,13 @@
       label.className = "clone-label";
       label.textContent = instanceName;
       clone.appendChild(label);
+
+      // Click to select clone (for Backspace delete)
+      clone.addEventListener("click", (e) => {
+        // If they clicked a pin, pin handler already runs and stops propagation
+        e.stopPropagation();
+        selectClone(clone);
+      });
 
       layout.appendChild(clone);
 
@@ -858,14 +950,10 @@
 
       try {
         localStorage.setItem("itch_pin_dict", JSON.stringify(payload));
-        window.location.href = "/view/editor/index.html"
-
+        window.location.href = "/view/editor/index.html";
       } catch {
         alert("Failure Somewher");
       }
-
-      
-      // window.location.href = "step2.html";
     });
   </script>
 </body>
