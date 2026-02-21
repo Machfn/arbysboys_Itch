@@ -306,10 +306,10 @@
 
 <body>
   <nav>
-    <a href="test.html" class="logo">ITCH</a>
+    <a href="/" class="logo">ITCH</a>
     <ul>
-      <li><a href="test.html">Home</a></li>
-      <li><a href="play.html">ITCH Play</a></li>
+      <li><a href="/">Home</a></li>
+      <li><a href="/layout">ITCH Play</a></li>
     </ul>
   </nav>
 
@@ -322,7 +322,7 @@
       <!-- LEFT: Board -->
       <section class="board-area">
         <div class="board-container">
-          <img src="../../assets/af.jpg" id="boardImage" class="board-image" alt="Arduino board">
+          <img src="/assets/af.jpg" id="boardImage" class="board-image" alt="Arduino board">
 
           <!-- ====== BOARD PINS ====== -->
           <div class="pin" data-name="D21" style="left:72.7%; top:28.4%;"></div>
@@ -388,28 +388,28 @@
         <div class="sidebar-grid">
           <div class="source-item" draggable="true" data-component="LED" data-src="../../assets/LED.jpg" title="Drag LED">
             <div>
-              <img src="../../assets/LED.jpg" alt="LED">
+              <img src="/assets/LED.jpg" alt="LED">
               <div class="source-cap">LED</div>
             </div>
           </div>
 
           <div class="source-item" draggable="true" data-component="SERVO" data-src="../../assets/servo.jpg" title="Drag SERVO">
             <div>
-              <img src="../../assets/servo.jpg" alt="SERVO">
+              <img src="/assets/servo.jpg" alt="SERVO">
               <div class="source-cap">SERVO</div>
             </div>
           </div>
 
           <div class="source-item" draggable="true" data-component="INPUT" data-src="../../assets/switch.jpg" title="Drag INPUT">
             <div>
-              <img src="../../assets/switch.jpg" alt="INPUT">
+              <img src="/assets/switch.jpg" alt="INPUT">
               <div class="source-cap">INPUT</div>
             </div>
           </div>
 
           <div class="source-item" draggable="true" data-component="MOTOR" data-src="../../assets/motor.jpg" title="Drag MOTOR">
             <div>
-              <img src="../../assets/motor.jpg" alt="MOTOR">
+              <img src="/assets/motor.jpg" alt="MOTOR">
               <div class="source-cap">MOTOR</div>
             </div>
           </div>
@@ -950,7 +950,7 @@ tag.style.transform = "translate(-50%, -50%)";
 
       try {
         localStorage.setItem("itch_pin_dict", JSON.stringify(payload));
-        window.location.href = "/view/editor/index.html";
+        window.location.href = "/editor";
       } catch {
         alert("Failure Somewher");
       }
