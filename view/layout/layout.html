@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ITCH | Play</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* --- Base reset --- */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Open Sans', sans-serif;
+      color: #333;
+      line-height: 1.6;
+      background: #fcfcfc;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* --- Navigation Bar --- */
+    nav {
+      background: #fff;
+      padding: 20px 10%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .logo {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #8e44ad;
+      letter-spacing: 2px;
+      text-decoration: none;
+    }
+
+    nav ul { list-style: none; display: flex; gap: 30px; }
+    nav a { text-decoration: none; color: #555; font-weight: 600; transition: color 0.3s; }
+    nav a:hover { color: #8e44ad; }
+
+    /* --- Main layout: board + sidebar --- */
+    .main-content {
+      flex: 1;
+      padding-top: 80px;
+      padding-left: 10%;
+      padding-right: 10%;
+      background: #ffffff;
+    }
+
+    .play-layout {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      padding: 24px 0;
+      position: relative;
+    }
+    .play-layout.dragover { background: #f0f7ff; }
+
+    /* Global overlay ABOVE all images */
+    .global-overlay{
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 50;          /* lines overtop images */
+      pointer-events: none; /* don’t block pin clicks */
+    }
+
+    /* Left area (board) */
+    .board-area { flex: 1; min-width: 0; }
+    .board-container { position: relative; width: 100%; max-width: 900px; }
+    .board-image { width: 100%; display: block; }
+
+    /* Pins */
+    .pin, .comp-pin{
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      border: 2px solid #fff;
+      z-index: 60; /* above overlay */
+    }
+
+    /* Board pins */
+    .pin { background: red; }
+    .pin:hover { background: yellow; }
+
+    /* Clone pins */
+    .comp-pin { background: #2563eb; }
+    .comp-pin:hover { background: #60a5fa; }
+
+    .pin.selected, .comp-pin.selected{
+      outline: 2px solid #eab308;
+      outline-offset: 3px;
+    }
+
+    /* Wires and X marks */
+    .wire{
+      stroke: red;
+      stroke-width: 6;
+      stroke-linecap: round;
+      pointer-events: stroke;
+      cursor: pointer;
+    }
+    .xmark{
+      stroke:#1d4ed8;
+      stroke-width:3;
+      stroke-linecap:round;
+      pointer-events: none;
+    }
+    .wire.selected-wire{ stroke: orange; }
+
+    /* Right area (sidebar) */
+    .sidebar {
+      width: 280px;
+      flex: 0 0 280px;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+      position: relative;
+      z-index: 2;
+    }
+
+    .sidebar h3{
+      font-family: 'Montserrat', sans-serif;
+      font-size: 14px;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      color: #444;
+    }
+
+    .sidebar-grid{
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    /* Smaller, cleaner "icons" (drag sources) */
+    .source-item{
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,0.08);
+      cursor: grab;
+      background: #ffffff;
+      overflow: hidden;
+      user-select: none;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+      transition: transform 0.08s ease, box-shadow 0.2s ease;
+      display: grid;
+      place-items: center;
+      padding: 10px;
+      min-height: 92px;
+    }
+    .source-item:hover{
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+    .source-item:active{ cursor: grabbing; transform: translateY(1px); }
+
+    .source-item img{
+      width: 64px;          /* smaller */
+      height: 64px;
+      object-fit: contain;
+      display: block;
+      pointer-events: none;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,0.10));
+    }
+
+    /* Optional caption under each icon */
+    .source-cap{
+      margin-top: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      color: #555;
+      font-family: 'Montserrat', sans-serif;
+      text-align: center;
+    }
+
+    /* Clones dropped onto background */
+    .clone {
+      position: absolute;
+      width: 150px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,0.10);
+      background: #fff;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.12);
+      overflow: hidden;
+      cursor: move;
+      user-select: none;
+      z-index: 3;
+    }
+    .clone img{
+      width: 100%;
+      display: block;
+      pointer-events: none;
+    }
+
+    /* Default single pin position */
+    .clone .comp-pin[data-role="MAIN"]{ left: 85%; top: 20%; }
+
+    /* Motor extra pins positions */
+    .clone.motor .comp-pin[data-role="IN1"]{ left: 20%; top: 20%; }
+    .clone.motor .comp-pin[data-role="IN2"]{ left: 80%; top: 20%; }
+    .clone.motor .comp-pin[data-role="IN3"]{ left: 20%; top: 80%; }
+    .clone.motor .comp-pin[data-role="IN4"]{ left: 80%; top: 80%; }
+
+    /* Small labels near motor pins */
+    .pin-tag{
+      position: absolute;
+      font-size: 10px;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(0,0,0,0.10);
+      padding: 1px 5px;
+      border-radius: 999px;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+      z-index: 61;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    /* Center label on clone */
+    .clone-label{
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 12px;
+      font-weight: 700;
+      background: rgba(255,255,255,0.88);
+      border: 1px solid rgba(0,0,0,0.10);
+      padding: 3px 10px;
+      border-radius: 999px;
+      pointer-events: none;
+      text-align: center;
+      max-width: calc(100% - 16px);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    /* Next-step button */
+    .next-step-btn{
+      width: 100%;
+      margin-top: 14px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(142,68,173,0.35);
+      background: rgba(142,68,173,0.10);
+      color: #6d2f8a;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.05s;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .next-step-btn:hover{ background: rgba(142,68,173,0.16); }
+    .next-step-btn:active{ transform: translateY(1px); }
+
+    footer {
+      background: #222;
+      color: white;
+      padding: 40px 10%;
+      text-align: center;
+    }
+    .team-names {
+      font-size: 14px;
+      letter-spacing: 1px;
+      opacity: 0.7;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 900px) {
+      .play-layout { flex-direction: column; }
+      .sidebar { width: 100%; flex-basis: auto; }
+      .board-container { max-width: 100%; }
+    }
+  </style>
+</head>
+
+<body>
+  <nav>
+    <a href="test.html" class="logo">ITCH</a>
+    <ul>
+      <li><a href="test.html">Home</a></li>
+      <li><a href="play.html">ITCH Play</a></li>
+    </ul>
+  </nav>
+
+  <main class="main-content">
+    <div class="play-layout">
+
+      <!-- Overlay ABOVE all images -->
+      <svg id="overlay" class="global-overlay"></svg>
+
+      <!-- LEFT: Board -->
+      <section class="board-area">
+        <div class="board-container">
+          <img src="af.jpg" id="boardImage" class="board-image" alt="Arduino board">
+
+          <!-- ====== BOARD PINS ====== -->
+          <div class="pin" data-name="D21" style="left:72.7%; top:28.4%;"></div>
+          <div class="pin" data-name="D20" style="left:72.7%; top:30.5%;"></div>
+          <div class="pin" data-name="AREF" style="left:72.7%; top:32.6%;"></div>
+          <div class="pin" data-name="GND"  style="left:72.7%; top:34.7%;"></div>
+          <div class="pin" data-name="D13" style="left:72.7%; top:36.8%;"></div>
+          <div class="pin" data-name="D12" style="left:72.7%; top:38.8%;"></div>
+          <div class="pin" data-name="D11" style="left:72.7%; top:40.8%;"></div>
+          <div class="pin" data-name="D10" style="left:72.7%; top:42.8%;"></div>
+          <div class="pin" data-name="D9"  style="left:72.7%; top:44.8%;"></div>
+          <div class="pin" data-name="D8"  style="left:72.7%; top:46.8%;"></div>
+          <div class="pin" data-name="D7"  style="left:72.7%; top:50.8%;"></div>
+          <div class="pin" data-name="D6"  style="left:72.7%; top:52.8%;"></div>
+          <div class="pin" data-name="D5"  style="left:72.7%; top:54.8%;"></div>
+          <div class="pin" data-name="D4"  style="left:72.7%; top:56.8%;"></div>
+          <div class="pin" data-name="D3"  style="left:72.7%; top:58.8%;"></div>
+          <div class="pin" data-name="D2"  style="left:72.7%; top:60.8%;"></div>
+          <div class="pin" data-name="D1"  style="left:72.7%; top:62.8%;"></div>
+          <div class="pin" data-name="D0"  style="left:72.7%; top:64.8%;"></div>
+          <div class="pin" data-name="D14" style="left:72.7%; top:69.6%;"></div>
+          <div class="pin" data-name="D15" style="left:72.7%; top:71.7%;"></div>
+          <div class="pin" data-name="D16" style="left:72.7%; top:73.8%;"></div>
+          <div class="pin" data-name="D17" style="left:72.7%; top:75.9%;"></div>
+          <div class="pin" data-name="D18" style="left:72.7%; top:78.0%;"></div>
+          <div class="pin" data-name="D19" style="left:72.7%; top:80.1%;"></div>
+          <div class="pin" data-name="D20" style="left:72.7%; top:82.2%;"></div>
+          <div class="pin" data-name="D21" style="left:72.7%; top:84.3%;"></div>
+
+          <div class="pin" data-name="NC"    style="left:34.65%; top:35.7%;"></div>
+          <div class="pin" data-name="IOREF" style="left:34.65%; top:37.8%;"></div>
+          <div class="pin" data-name="RESET" style="left:34.65%; top:39.9%;"></div>
+          <div class="pin" data-name="3V3"   style="left:34.65%; top:42.0%;"></div>
+          <div class="pin" data-name="5V"    style="left:34.65%; top:44.1%;"></div>
+          <div class="pin" data-name="GND"   style="left:34.65%; top:46.2%;"></div>
+          <div class="pin" data-name="GND"   style="left:34.65%; top:48.3%;"></div>
+          <div class="pin" data-name="VIN"   style="left:34.65%; top:50.4%;"></div>
+
+          <div class="pin" data-name="D54" style="left:34.65%; top:54.5%;"></div>
+          <div class="pin" data-name="D55" style="left:34.65%; top:56.6%;"></div>
+          <div class="pin" data-name="D56" style="left:34.65%; top:58.7%;"></div>
+          <div class="pin" data-name="D57" style="left:34.65%; top:60.8%;"></div>
+          <div class="pin" data-name="D58" style="left:34.65%; top:62.9%;"></div>
+          <div class="pin" data-name="D59" style="left:34.65%; top:65.0%;"></div>
+          <div class="pin" data-name="D60" style="left:34.65%; top:67.1%;"></div>
+          <div class="pin" data-name="D61" style="left:34.65%; top:69.2%;"></div>
+          <div class="pin" data-name="D62" style="left:34.65%; top:73.8%;"></div>
+          <div class="pin" data-name="D63" style="left:34.65%; top:75.6%;"></div>
+          <div class="pin" data-name="D64" style="left:34.65%; top:78.0%;"></div>
+          <div class="pin" data-name="D65" style="left:34.65%; top:80.0%;"></div>
+          <div class="pin" data-name="D66" style="left:34.65%; top:82.0%;"></div>
+          <div class="pin" data-name="D67" style="left:34.65%; top:84.0%;"></div>
+          <div class="pin" data-name="D68" style="left:34.65%; top:86.1%;"></div>
+          <div class="pin" data-name="D69" style="left:34.65%; top:88.2%;"></div>
+          <!-- ====== END BOARD PINS ====== -->
+        </div>
+      </section>
+
+      <!-- RIGHT: Sidebar -->
+      <aside class="sidebar">
+        <h3>Components (drag)</h3>
+
+        <div class="sidebar-grid">
+          <div class="source-item" draggable="true" data-component="LED" data-src="LED.jpg" title="Drag LED">
+            <div>
+              <img src="LED.jpg" alt="LED">
+              <div class="source-cap">LED</div>
+            </div>
+          </div>
+
+          <div class="source-item" draggable="true" data-component="SERVO" data-src="servo.jpg" title="Drag SERVO">
+            <div>
+              <img src="servo.jpg" alt="SERVO">
+              <div class="source-cap">SERVO</div>
+            </div>
+          </div>
+
+          <div class="source-item" draggable="true" data-component="INPUT" data-src="switch.jpg" title="Drag INPUT">
+            <div>
+              <img src="switch.jpg" alt="INPUT">
+              <div class="source-cap">INPUT</div>
+            </div>
+          </div>
+
+          <div class="source-item" draggable="true" data-component="MOTOR" data-src="motor.jpg" title="Drag MOTOR">
+            <div>
+              <img src="motor.jpg" alt="MOTOR">
+              <div class="source-cap">MOTOR</div>
+            </div>
+          </div>
+        </div>
+
+        <button id="nextStepBtn" class="next-step-btn" type="button">Go to next step</button>
+
+        <div style="margin-top:10px; font-size:12px; color:#666;">
+          Select a wire, then press <strong>Backspace</strong> to delete it.
+        </div>
+        <div style="margin-top:6px; font-size:12px; color:#666;">
+          Console: run <code>getPinDict()</code>.
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2023 ITCH Project Team</p>
+    <div class="team-names">PABLO | DAVID | BEN | DHIREN | BRAYDEN</div>
+  </footer>
+
+  <script>
+    // =========================
+    // Overlay + wiring
+    // =========================
+    const overlay = document.getElementById("overlay");
+    const layout  = document.querySelector(".play-layout");
+    const nextStepBtn = document.getElementById("nextStepBtn");
+
+    let startNode = null;
+    let selectedWireGroup = null;
+
+    // wireRecords: { group, aPin, bPin }
+    const wireRecords = [];
+
+    function resizeOverlay() {
+      const box = layout.getBoundingClientRect();
+      overlay.setAttribute("viewBox", `0 0 ${box.width} ${box.height}`);
+      overlay.setAttribute("width", box.width);
+      overlay.setAttribute("height", box.height);
+    }
+    window.addEventListener("resize", resizeOverlay);
+    window.addEventListener("load", resizeOverlay);
+
+    function nodeCenterInLayout(el) {
+      const r = el.getBoundingClientRect();
+      const l = layout.getBoundingClientRect();
+      return {
+        x: r.left - l.left + r.width / 2,
+        y: r.top  - l.top  + r.height / 2
+      };
+    }
+
+    function selectNode(el) {
+      el.classList.add("selected");
+      startNode = el;
+    }
+
+    function clearNodeSelection() {
+      if (startNode) startNode.classList.remove("selected");
+      startNode = null;
+    }
+
+    function clearWireSelection() {
+      if (!selectedWireGroup) return;
+      const wire = selectedWireGroup.querySelector(".wire");
+      if (wire) wire.classList.remove("selected-wire");
+      selectedWireGroup = null;
+    }
+
+    function selectWire(group) {
+      clearWireSelection();
+      selectedWireGroup = group;
+      const wire = group.querySelector(".wire");
+      if (wire) wire.classList.add("selected-wire");
+    }
+
+    function drawX(cx, cy, size = 9) {
+      const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      const a = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      a.setAttribute("x1", cx - size);
+      a.setAttribute("y1", cy - size);
+      a.setAttribute("x2", cx + size);
+      a.setAttribute("y2", cy + size);
+      a.setAttribute("class", "xmark");
+
+      const b = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      b.setAttribute("x1", cx - size);
+      b.setAttribute("y1", cy + size);
+      b.setAttribute("x2", cx + size);
+      b.setAttribute("y2", cy - size);
+      b.setAttribute("class", "xmark");
+
+      g.appendChild(a);
+      g.appendChild(b);
+      return g;
+    }
+
+    function svgWireWithX(x1, y1, x2, y2) {
+      const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute("x1", x1);
+      line.setAttribute("y1", y1);
+      line.setAttribute("x2", x2);
+      line.setAttribute("y2", y2);
+      line.setAttribute("class", "wire");
+
+      const xg = drawX(x2, y2, 9);
+
+      group.appendChild(line);
+      group.appendChild(xg);
+      overlay.appendChild(group);
+
+      line.style.pointerEvents = "stroke";
+      group.style.pointerEvents = "visibleStroke";
+
+      group.addEventListener("click", (e) => {
+        e.stopPropagation();
+        selectWire(group);
+      });
+
+      return group;
+    }
+
+    function attachPinBehavior(pinEl) {
+      pinEl.addEventListener("click", (e) => {
+        e.stopPropagation();
+        clearWireSelection();
+
+        if (!startNode) { selectNode(pinEl); return; }
+        if (pinEl === startNode) { clearNodeSelection(); return; }
+
+        resizeOverlay();
+        const a = nodeCenterInLayout(startNode);
+        const b = nodeCenterInLayout(pinEl);
+
+        const g = svgWireWithX(a.x, a.y, b.x, b.y);
+        wireRecords.push({ group: g, aPin: startNode, bPin: pinEl });
+
+        clearNodeSelection();
+      });
+    }
+
+    document.querySelectorAll(".pin").forEach(attachPinBehavior);
+
+    layout.addEventListener("click", () => {
+      clearNodeSelection();
+      clearWireSelection();
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key !== "Backspace") return;
+      e.preventDefault();
+
+      if (!selectedWireGroup) return;
+
+      for (let i = wireRecords.length - 1; i >= 0; i--) {
+        if (wireRecords[i].group === selectedWireGroup) wireRecords.splice(i, 1);
+      }
+      selectedWireGroup.remove();
+      selectedWireGroup = null;
+    });
+
+    // =========================
+    // Instances registry
+    // =========================
+    // instancesByName.get(name) => { typeName, pins: Map(role -> pinEl) }
+    const instancesByName = new Map();
+
+    function promptForUniqueName(defaultName = "Item") {
+      let name = prompt("Name this item:", defaultName);
+      if (name === null) return null;
+      name = name.trim();
+
+      while (name.length === 0 || instancesByName.has(name)) {
+        if (name.length === 0) {
+          name = prompt("Name cannot be empty. Enter a name:", defaultName);
+        } else {
+          name = prompt(`"${name}" already exists. Enter a unique name:`, defaultName);
+        }
+        if (name === null) return null;
+        name = name.trim();
+      }
+      return name;
+    }
+
+    // =========================
+    // Helper: get "pin number" from a board pin element.
+    // Uses its data-name (e.g., "D13", "GND", "VIN", etc.)
+    // =========================
+    function getBoardPinNumber(pinEl) {
+      return pinEl?.dataset?.name ?? null;
+    }
+
+    // =========================
+    // getPinDict() requested:
+    // returns: [ motorsDict, servosDict, inputsDict, ledsDict ]
+    //
+    // Each dict includes EVERY CONNECTION made with that type in the format:
+    //   itemName : pinNumber
+    //
+    // Motor: motorName : [pinIN1, pinIN2, pinIN3, pinIN4]
+    //
+    // Important detail:
+    // - "pinNumber" means the BOARD pin the component is wired to (data-name on the red board pin).
+    // - If a component pin is connected to multiple board pins, the latest connection wins (last drawn wire).
+    // - If a component pin is wired to another component pin (not a board pin), it is ignored for this dict.
+    // =========================
+    function getPinDict() {
+      const motors = {};
+      const servos = {};
+      const inputs = {};
+      const leds = {};
+
+      // For motors we accumulate per role IN1..IN4
+      // motorConnections[name] = { IN1: "D3", IN2: "D4", IN3: ..., IN4: ... }
+      const motorConnections = new Map();
+
+      // For non-motor: last board connection found
+      const lastBoardConn = new Map(); // instanceName -> boardPinName (e.g. D13)
+
+      function recordNonMotor(instanceName, boardPinName) {
+        if (!boardPinName) return;
+        lastBoardConn.set(instanceName, boardPinName);
+      }
+
+      function recordMotor(instanceName, role, boardPinName) {
+        if (!boardPinName) return;
+        if (!motorConnections.has(instanceName)) {
+          motorConnections.set(instanceName, { IN1: null, IN2: null, IN3: null, IN4: null });
+        }
+        motorConnections.get(instanceName)[role] = boardPinName;
+      }
+
+      // Walk wireRecords in order (so "latest wins")
+      for (const rec of wireRecords) {
+        const a = rec.aPin;
+        const b = rec.bPin;
+
+        const aIsBoard = a?.classList?.contains("pin");
+        const bIsBoard = b?.classList?.contains("pin");
+        const aIsComp  = a?.classList?.contains("comp-pin");
+        const bIsComp  = b?.classList?.contains("comp-pin");
+
+        // Only care about component<->board connections
+        if (aIsComp && bIsBoard) {
+          handleCompToBoard(a, b);
+        } else if (bIsComp && aIsBoard) {
+          handleCompToBoard(b, a);
+        }
+      }
+
+      function handleCompToBoard(compPinEl, boardPinEl) {
+        const clone = compPinEl.closest(".clone");
+        if (!clone) return;
+
+        const instanceName = clone.dataset.instanceName;
+        const typeName = clone.dataset.component;
+        const role = compPinEl.dataset.role || "MAIN";
+        const boardPinName = getBoardPinNumber(boardPinEl);
+
+        if (!instanceName || !typeName || !boardPinName) return;
+
+        if (typeName === "MOTOR") {
+          recordMotor(instanceName, role, boardPinName);
+        } else {
+          recordNonMotor(instanceName, boardPinName);
+        }
+      }
+
+      // Build output dicts
+      for (const [instanceName, info] of instancesByName.entries()) {
+        if (info.typeName === "MOTOR") {
+          const c = motorConnections.get(instanceName) || { IN1: null, IN2: null, IN3: null, IN4: null };
+          motors[instanceName] = [c.IN1, c.IN2, c.IN3, c.IN4];
+        } else {
+          const pinNum = lastBoardConn.get(instanceName) || null;
+          if (info.typeName === "SERVO") servos[instanceName] = pinNum;
+          else if (info.typeName === "LED") leds[instanceName] = pinNum;
+          else if (info.typeName === "INPUT") inputs[instanceName] = pinNum;
+        }
+      }
+
+      return [motors, servos, inputs, leds];
+    }
+
+    window.getPinDict = getPinDict;
+
+    // =========================
+    // Drag + Drop on background
+    // =========================
+    let dragPayload = null;
+
+    document.querySelectorAll(".source-item").forEach(item => {
+      item.addEventListener("dragstart", (e) => {
+        dragPayload = {
+          component: item.dataset.component,
+          src: item.dataset.src
+        };
+        e.dataTransfer.setData("text/plain", JSON.stringify(dragPayload));
+        e.dataTransfer.effectAllowed = "copy";
+      });
+    });
+
+    layout.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      layout.classList.add("dragover");
+      e.dataTransfer.dropEffect = "copy";
+    });
+
+    layout.addEventListener("dragleave", () => {
+      layout.classList.remove("dragover");
+    });
+
+    layout.addEventListener("drop", (e) => {
+      e.preventDefault();
+      layout.classList.remove("dragover");
+
+      let data = null;
+      try {
+        data = JSON.parse(e.dataTransfer.getData("text/plain"));
+      } catch {
+        data = dragPayload;
+      }
+      if (!data || !data.src) return;
+
+      const instanceName = promptForUniqueName(data.component);
+      if (instanceName === null) return;
+
+      const layoutRect = layout.getBoundingClientRect();
+      const x = e.clientX - layoutRect.left;
+      const y = e.clientY - layoutRect.top;
+
+      createCloneOnBackground(instanceName, data.component, data.src, x, y);
+      resizeOverlay();
+    });
+
+    function createMotorPins(cloneEl, instanceName) {
+      const roles = ["IN1", "IN2", "IN3", "IN4"];
+      const pinMap = new Map();
+
+      for (const role of roles) {
+        const pin = document.createElement("div");
+        pin.className = "comp-pin";
+        pin.dataset.role = role;
+        // unique data-name (component-side)
+        pin.dataset.name = `${instanceName}:${role}`;
+
+        const tag = document.createElement("div");
+        tag.className = "pin-tag";
+        tag.textContent = role;
+        tag.style.left = (role === "IN1" || role === "IN3") ? "20%" : "80%";
+        tag.style.top  = (role === "IN1" || role === "IN2") ? "12%" : "88%";
+        tag.style.position = "absolute";
+
+        cloneEl.appendChild(pin);
+        cloneEl.appendChild(tag);
+
+        attachPinBehavior(pin);
+        pinMap.set(role, pin);
+      }
+
+      return pinMap;
+    }
+
+    function createCloneOnBackground(instanceName, typeName, src, x, y) {
+      const clone = document.createElement("div");
+      clone.className = "clone";
+      clone.dataset.component = typeName;
+      clone.dataset.instanceName = instanceName;
+
+      if (typeName === "MOTOR") clone.classList.add("motor");
+
+      const W = 150, H = 150;
+      clone.style.left = `${x - W / 2}px`;
+      clone.style.top  = `${y - H / 2}px`;
+
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = typeName;
+      clone.appendChild(img);
+
+      let pins = new Map();
+
+      if (typeName === "MOTOR") {
+        pins = createMotorPins(clone, instanceName);
+      } else {
+        const pin = document.createElement("div");
+        pin.className = "comp-pin";
+        pin.dataset.role = "MAIN";
+        pin.dataset.name = `${instanceName}:MAIN`;
+        clone.appendChild(pin);
+
+        attachPinBehavior(pin);
+        pins.set("MAIN", pin);
+      }
+
+      const label = document.createElement("div");
+      label.className = "clone-label";
+      label.textContent = instanceName;
+      clone.appendChild(label);
+
+      layout.appendChild(clone);
+
+      instancesByName.set(instanceName, { typeName, pins });
+
+      makeCloneMovable(clone);
+      return clone;
+    }
+
+    function makeCloneMovable(cloneEl) {
+      let isDragging = false;
+      let offsetX = 0, offsetY = 0;
+
+      cloneEl.addEventListener("mousedown", (e) => {
+        if (e.target.classList.contains("comp-pin")) return;
+
+        isDragging = true;
+        const rect = cloneEl.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+        cloneEl.style.cursor = "grabbing";
+        e.preventDefault();
+      });
+
+      window.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
+
+        const layoutRect = layout.getBoundingClientRect();
+        const x = e.clientX - layoutRect.left - offsetX;
+        const y = e.clientY - layoutRect.top  - offsetY;
+
+        const maxX = layout.clientWidth  - cloneEl.offsetWidth;
+        const maxY = layout.clientHeight - cloneEl.offsetHeight;
+
+        cloneEl.style.left = `${Math.min(Math.max(0, x), Math.max(0, maxX))}px`;
+        cloneEl.style.top  = `${Math.min(Math.max(0, y), Math.max(0, maxY))}px`;
+
+        resizeOverlay();
+      });
+
+      window.addEventListener("mouseup", () => {
+        if (!isDragging) return;
+        isDragging = false;
+        cloneEl.style.cursor = "move";
+      });
+    }
+
+    // =========================
+    // Next Step
+    // =========================
+    nextStepBtn.addEventListener("click", () => {
+      const payload = getPinDict();
+      console.log("Pin dict payload:", payload);
+
+      try {
+        localStorage.setItem("itch_pin_dict", JSON.stringify(payload));
+      } catch {}
+
+      alert("Next step clicked. Pin dict saved to localStorage as 'itch_pin_dict' and printed to console.");
+      // window.location.href = "step2.html";
+    });
+  </script>
+</body>
+</html>
