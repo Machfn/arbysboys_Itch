@@ -101,7 +101,13 @@ let addPin = (p) => {
     const b = blockBase();
     b.classList.add("pin");
     b.innerHTML = `<strong>Pin Output</strong>
-        <select class="name">${options(output)}`
+        <select class="name">${options(SIMPLE_OUTPUTS)}</select>
+        →
+        <select class="state"><option>on</option><option>off</option></select>
+        <button class="danger">✖</button>`;
+    b.querySelector(".danger").onclick = () => b.remove();
+    p.appendChild(b);
+
 }
 
 function addOutput(p) {

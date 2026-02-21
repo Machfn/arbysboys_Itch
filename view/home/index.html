@@ -20,7 +20,10 @@
             color: #333;
             line-height: 1.6;
             scroll-behavior: smooth;
-            background-color: #fcfcfc;
+            /* background-color: #fcfcfc; */
+            background-image: url("../../assets/background.jpg");
+            background-repeat: no-repeat;
+            background-size: cover;
         }
 
         /* --- Navigation Bar --- */
@@ -68,7 +71,9 @@
             display: flex;
             align-items: center;
             padding: 0 10%;
-            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            background-color: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px); 
+            /* background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); */
             padding-top: 80px;
         }
 
@@ -79,13 +84,15 @@
         .hero h1 {
             font-family: 'Montserrat', sans-serif;
             font-size: 85px;
-            color: #222;
+            /* color: #222; */
+            color: #8e44ad;
             margin-bottom: 10px;
         }
 
         .hero p {
             font-size: 22px;
-            color: #666;
+            /* color: #666; */
+            color: #F3F4F6;
             max-width: 500px;
             margin-bottom: 30px;
         }
@@ -97,7 +104,8 @@
 
         .hero-image img {
             max-width: 90%;
-            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1));
+            /* filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1)); */
+            filter: drop-shadow(10px 10px 1rem #8e44ad);
             transition: transform 0.5s;
         }
 
@@ -167,6 +175,8 @@
             opacity: 0.7;
         }
 
+        
+
         /* --- Mobile Friendly --- */
         @media (max-width: 900px) {
             .hero {
@@ -188,7 +198,7 @@
         <div class="logo">ITCH</div>
         <ul>
             <li><a href="#home">Home</a></li>
-            <li><a href="play.html"">ITCH Play</a></li>
+            <li><a href="play.html">ITCH Play</a></li>
         </ul>
     </nav>
 
@@ -202,7 +212,7 @@
         </div>
         <div class="hero-image">
             <!-- Image of the Arduino Mega -->
-            <img src="arduino.jpg" alt="Microcontroller Board">
+            <img src="../../assets/Arduino-Mega-2560.png" alt="Microcontroller Board">
         </div>
     </section>
 
