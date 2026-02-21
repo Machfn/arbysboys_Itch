@@ -1,0 +1,28 @@
+[
+  {
+    "type": "pin_mode",
+    "pin": "",
+    "mode": "input"
+  },
+  {
+    "type": "pin_write",
+    "pin": "",
+    "value": "on"
+  },
+  {
+    "type": "set_variable",
+    "name": "",
+    "value": ""
+  },
+  {
+    "type": "loop",
+    "times": "",
+    "children": []
+  },
+  {
+    "type": "if",
+    "condition": "",
+    "then": [],
+    "else": []
+  }
+]
