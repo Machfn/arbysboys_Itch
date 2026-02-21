@@ -221,6 +221,12 @@ function parse(container) {
             to_var : b.querySelector(".var").value,
             from_pin: OUTPUT_DEVICES[b.querySelector(".dev").value]
         }
+    } else if (b.classList.contains("pin")) {
+        return {
+            type: "pin_write",
+            pin: SIMPLE_OUTPUTS[b.querySelector(".name").value],
+            value:b.querySelector(".state").value
+        }
     }
   });
 }
