@@ -15,6 +15,10 @@ class Json():
    def empty_file(self):
        with open(self.c_file_txt,"w") as e:
            e.write("")
+    
+   def libraries(self):
+        with open(self.c_file_txt, "a") as c:
+            c.write("#include <Stepper.h>\n#include <Servo.h>\n#include <LED.h>\n\n")
 
    def write_file(self,file_contents):
        with open(self.c_file_txt, "a") as c:
@@ -47,13 +51,13 @@ class Json():
        return file_contents
 
 
-destination = os.path.join(os.getcwd(),"../" ,"output_files", "r.md")
+destination = os.path.join(os.getcwd(),"../" ,"output_files", "output_files.ino")
 
 j = Json("test.json",destination)
 data = j.open_file()
 file_contents = j.parse_arr(data)
 j.empty_file()
-j.write_file(file_contents)
+j.libraries()
 
 
 
