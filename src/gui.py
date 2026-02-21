@@ -1,21 +1,23 @@
 import webview
 import os
+import sys
 from src.server import Server
 import threading
 
 class GUI:
-    def __init__(self, home, second, third, title, min_size):
+    def __init__(self, folder_temp, stat_fold, title, min_size):
         self.on = True
-        self.home = home
-        self.second = second
-        self.third = third
+        self.temp_folder = folder_temp
+        self.stat_folder = stat_fold
         self.title = title
         self.min_size = min_size
 
     def start(self):
-        server = Server(self.home, self.second, self.third)
-        server_thread = threading.Thread(server.start())
+        server = Server(self.temp_folder, self.stat_folder)
+        server_thread = threading.Thread(target=server.start)
         server_thread.start()
-        webview.start_window(self.title, "http://localhost:5000/", min_size=self.min_size)
+        webview.create_window(self.title, "http://localhost:5000/", min_size=self.min_size)
         webview.start(debug=True)
+        # server_thread.join()
+        sys.exit(0)
 
