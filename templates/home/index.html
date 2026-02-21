@@ -21,7 +21,7 @@
             line-height: 1.6;
             scroll-behavior: smooth;
             /* background-color: #fcfcfc; */
-            background-image: url("../../assets/background.jpg");
+            background-image: url("./assets/background.jpg");
             background-repeat: no-repeat;
             background-size: cover;
         }
@@ -197,8 +197,8 @@
     <nav>
         <div class="logo">ITCH</div>
         <ul>
-            <li><a href="../home/index.html">Home</a></li>
-            <li><a href="../layout/layout.html">ITCH Play</a></li>
+            <li><a href="/view/home/index.html">Home</a></li>
+            <li><a href="/view/layout/layout.html">ITCH Play</a></li>
         </ul>
     </nav>
 
@@ -208,11 +208,11 @@
         <div class="hero-content">
             <h1>ITCH</h1>
             <p>A Scratch-inspired platform designed to make microcontroller coding easy for everyone.</p>
-             <a href="../layout/layout.html" style="display:inline-block; padding: 15px 30px; background: #8e44ad; color: white; text-decoration: none; border-radius: 50px; font-weight: bold;">ITCH Play</a>
+             <a onclick="pywebview.api.go_to_layout()" style="display:inline-block; padding: 15px 30px; background: #8e44ad; color: white; text-decoration: none; border-radius: 50px; font-weight: bold;">ITCH Play</a>
         </div>
         <div class="hero-image">
             <!-- Image of the Arduino Mega -->
-            <img src="../../assets/Arduino-Mega-2560.png" alt="Microcontroller Board">
+            <img src="/assets/Arduino-Mega-2560.png" alt="Microcontroller Board">
         </div>
     </section>
 

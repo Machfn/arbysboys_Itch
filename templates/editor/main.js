@@ -255,5 +255,6 @@ function parse(container) {
 
 function exportJSON() {
     // document.getElementById("output").textContent = JSON.stringify(parse(workspace), null, 2);
-    console.log(JSON.stringify(parse(workspace)));
+
+    // pywebview.api.send_instruction_set(JSON.stringify(parse(workspace))));
 }

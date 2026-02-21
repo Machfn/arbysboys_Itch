@@ -1,15 +1,21 @@
 import webview
 import os
-# from src.frontEndApi import ExposedAPI
+from src.server import Server
+import threading
 
 class GUI:
-    def __init__(self, api, html_file, title, size):
-        self.api = api
+    def __init__(self, home, second, third, title, min_size):
+        self.on = True
+        self.home = home
+        self.second = second
+        self.third = third
         self.title = title
-        self.size = size
-        self.html = os.path.join(os.getcwd(), html_file)
+        self.min_size = min_size
 
     def start(self):
-        webview.create_window(self.title, self.html, js_api=self.api, min_size=self.size)
+        server = Server(self.home, self.second, self.third)
+        server_thread = threading.Thread(server.start())
+        server_thread.start()
+        webview.start_window(self.title, "http://localhost:5000/", min_size=self.min_size)
         webview.start(debug=True)
 
