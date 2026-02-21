@@ -1,4 +1,5 @@
 import json
+import os
 
 
 class Json():
@@ -46,11 +47,9 @@ class Json():
        return file_contents
 
 
+destination = os.path.join(os.getcwd(),"../" ,"output_files", "r.md")
 
-
-
-
-j = Json("test.json","c.txt")
+j = Json("test.json",destination)
 data = j.open_file()
 file_contents = j.parse_arr(data)
 j.empty_file()
