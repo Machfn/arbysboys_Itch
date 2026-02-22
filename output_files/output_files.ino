@@ -2,26 +2,19 @@
 #include <Servo.h>
 #include <LED.h>
 
-Servo SERVO;
+Stepper MOTOR(100,6,5,4,3);
 void setup() {
 
-SERVO.attach(6);
+MOTOR.setSpeed(100);
 pinMode(11, INPUT);
-pinMode(9, OUTPUT);
+pinMode(21, OUTPUT);
 }
 
 void loop() {
 
+digitalWrite(21, HIGH);
+MOTOR.step(100);
 int lk;
+lk = 40;
 lk = digitalRead(11);
-if(lk == 1){
-SERVO.write(70);
-delay(100);
-}
-
-else{
-SERVO.write(15);
-delay(100);
-}
-
 }

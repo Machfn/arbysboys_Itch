@@ -238,6 +238,7 @@
     .clone {
         position: absolute;
         width: 150px;
+        height: 150px;
         border-radius: 12px;
         border: 1px solid rgba(0, 0, 0, 0.10);
         background: #fff;
@@ -251,6 +252,8 @@
     .clone img {
         width: 100%;
         display: block;
+        height: 100%;
+        object-fit: contain;
         pointer-events: none;
     }
 
