@@ -210,14 +210,14 @@ function parse(container) {
     } else if (b.classList.contains("if")) {
       return {
         type: "if",
-        condition: b.querySelector(".condition").value,
+        condition: b.querySelector(".cond").value,
         then: parse(b.querySelector(".then")),
         else: parse(b.querySelector(".else"))
       };
     } else if (b.classList.contains("servo")) { //b.querySelector(".mode")
       return {
         type: "servo",
-        pin: SERVOS[b.querySelector(".name").value],
+        name:b.querySelector(".name").value,
         angle: b.querySelector(".deg").value
       };
     } else if (b.classList.contains("motor")) { //b.querySelector(".pin") && b.querySelector(".value")
@@ -256,5 +256,5 @@ function parse(container) {
 function exportJSON() {
     // document.getElementById("output").textContent = JSON.stringify(parse(workspace), null, 2);
 
-    // pywebview.api.send_instruction_set(JSON.stringify(parse(workspace))));
+    console.log(JSON.stringify(parse(workspace)));
 }
