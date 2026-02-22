@@ -2,16 +2,14 @@
 #include <Servo.h>
 #include <LED.h>
 
-Servo SERVO;
-Servo second_servo;
+Stepper motor(100,8,9,10,11);
 void setup() {
 
-SERVO.attach(D11);
-second_servo.attach(D9);
+motor.setSpeed(60);
 }
 
 void loop() {
 
-D9.write(45);
-delay(100);
+motor.step(100);
+delay(500);
 }

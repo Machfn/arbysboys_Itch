@@ -26,7 +26,7 @@ class Json():
         with open(self.output_files, "a") as s:
             if data[0]:
                 for k,v in data[0].items():
-                    s.write(f"Stepper {k}(100,{v[0]},{v[1]},{v[2]},{v[3]});\n")  
+                    s.write(f"Stepper {k}(100,{v[0][1:]},{v[1][1:]},{v[2][1:]},{v[3][1:]});\n")  
             
             if data[1]:
                 for k in data[1].keys():
@@ -40,7 +40,7 @@ class Json():
                     s.write(f"{k}.setSpeed(60);\n")
             if data[1]:
                 for k,v in data[1].items():
-                    s.write(f"{k}.attach({v});\n")
+                    s.write(f"{k}.attach({v[1:]});\n")
             if data[2]:
                 for v in data[2].values():
                     s.write(f"pinMode({v}, INPUT);\n")
@@ -83,10 +83,14 @@ class Json():
                         c.write(f"{i["to_var"]} = digitalRead({i["from_pin"]});\n")
 
                     if (type_ == "define_variable"):
-                        c.write(f"int {i["name"]};\n")
+                        c.write(f"int {i["type"]};\n")
 
                     if (type_ == "if"):
-                        pass
+                        c.write(f"if({i["condition"]})")
+                        c.write("{\n")
+                        loopy(i["then"])
+                        c.write("}\n\n")
+
 
             loopy(data)
             c.write("}\n")
