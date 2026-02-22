@@ -61,7 +61,7 @@ class Json():
                 
                     if (type_ == "pin_write"):
                         if (i["value"] == "on"):
-                            c.write(f"pinMode") # come back later with pin
+                            c.write(f"pinMode({i["pin"][1:]}, HIGH)") # come back later with pin
 
                     if (type_ == "set_variable"):
                         c.write(f"{i["name"]} = {i["value"]};\n")
@@ -83,7 +83,7 @@ class Json():
                         c.write(f"{i["to_var"]} = digitalRead({i["from_pin"]});\n")
 
                     if (type_ == "define_variable"):
-                        c.write(f"int {i["type"]};\n")
+                        c.write(f"int {i["name"]};\n")
 
                     if (type_ == "if"):
                         c.write(f"if({i["condition"]})")
