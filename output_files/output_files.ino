@@ -2,14 +2,11 @@
 #include <Servo.h>
 #include <LED.h>
 
-Stepper motor(100,8,9,10,11);
 void setup() {
 
-motor.setSpeed(60);
+pinMode(D2, OUTPUT);
 }
 
 void loop() {
 
-motor.step(100);
-delay(500);
-}
+pinMode(2, HIGH)}
