@@ -10,7 +10,8 @@ class Json():
 
 
    def open_file(self,filename):
-       with open(filename, "r") as f:
+       print(filename)
+       with open(filename, "r", encoding='utf-8') as f:
            data = json.load(f)
        return data  # returns array with dictionaries inside
 
@@ -37,7 +38,7 @@ class Json():
             s.write("void setup() {\n\n")
             if data[0]:
                 for k in data[0].keys():
-                    s.write(f"{k}.setSpeed(60);\n")
+                    s.write(f"{k}.setSpeed(100);\n")
             if data[1]:
                 for k,v in data[1].items():
                     s.write(f"{k}.attach({v[1:]});\n")
@@ -61,9 +62,9 @@ class Json():
                 
                     if (type_ == "pin_write"):
                         if (i["value"] == "on"):
-                            c.write(f"pinWrite({i["pin"][1:]}, HIGH);\n") 
+                            c.write(f"digitalWrite({i["pin"][1:]}, HIGH);\n") 
                         if (i["value"] == "off"):
-                            c.write(f"pinWrite({i["pin"][1:]}, LOW);\n")
+                            c.write(f"digitalWrite({i["pin"][1:]}, LOW);\n")
 
                     if (type_ == "set_variable"):
                         c.write(f"{i["name"]} = {i["value"]};\n")
@@ -79,10 +80,10 @@ class Json():
                         c.write(f"delay(100);\n")
                     if (type_ == "motor"):
                         c.write(f"{i["name"]}.step(100);\n")
-                        c.write(f"delay(500);\n")
+                        # c.write(f"delay(200);\n")
 
                     if (type_ == "output"):
-                        c.write(f"{i["to_var"]} = digitalRead({i["from_pin"]});\n")
+                        c.write(f"{i["to_var"]} = digitalRead({i["from_pin"][1:]});\n")
 
                     if (type_ == "define_variable"):
                         c.write(f"int {i["name"]};\n")
@@ -92,6 +93,10 @@ class Json():
                         c.write("{\n")
                         loopy(i["then"])
                         c.write("}\n\n")
+                        c.write("else")
+                        c.write("{\n")
+                        loopy(i["else"])
+                        c.write("}\n\n")
 
 
             loopy(data)
@@ -100,14 +105,14 @@ class Json():
        
 
 
-destination = os.path.join(os.getcwd(),"../" ,"output_files", "output_files.ino")
+# destination = os.path.join(os.getcwd(),"../" ,"output_files", "output_files.ino")
 
-j = Json("input.json", "test.json",destination)
+# j = Json("setup.json", "steps.json",destination)
 
-j.empty_file()
-j.libraries()
-setup_data = j.open_file("input.json")
-j.setup_parse_global(setup_data)
-j.setup_parse_function(setup_data)
-action_data = j.open_file("test.json")
-j.action_parse(action_data)
+# j.empty_file()
+# j.libraries()
+# setup_data = j.open_file("input.json")
+# j.setup_parse_global(setup_data)
+# j.setup_parse_function(setup_data)
+# action_data = j.open_file("test.json")
+# j.action_parse(action_data)

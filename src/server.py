@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request
 import json
 import os
+from src.conversion import Json
+from src.compile_send import Finish
 
 
 class Server:
@@ -33,6 +35,19 @@ class Server:
                 with open(os.path.join(self.json_loc,'steps.json'), 'w') as json_file:
                     json.dump(steps, json_file,  indent=4)
                     # Add the converison functions in here
+                destination = os.path.join(self.json_loc, "../" ,"output_files", "output_files.ino")
+
+                j = Json(os.path.join(self.json_loc, "setup.json"), os.path.join(self.json_loc,"steps.json"),destination)
+
+                j.empty_file()
+                j.libraries()
+                setup_data = j.open_file(os.path.join(self.json_loc, "setup.json"))
+                j.setup_parse_global(setup_data)
+                j.setup_parse_function(setup_data)
+                action_data = j.open_file(os.path.join(self.json_loc, "steps.json"))
+                j.action_parse(action_data)
+                sd = Finish(os.path.join(self.json_loc, "../output_files"))
+                result = sd.find_board()
                 return "Success", 200
             else:
                 return "not post", 404

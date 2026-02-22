@@ -1,7 +1,29 @@
 [
     {
-        "type": "pin_write",
-        "pin": "D12",
-        "value": "on"
+        "type": "define_variable",
+        "name": "lk"
+    },
+    {
+        "type": "output",
+        "to_var": "lk",
+        "from_pin": "D11"
+    },
+    {
+        "type": "if",
+        "condition": "lk == 1",
+        "then": [
+            {
+                "type": "servo",
+                "name": "SERVO",
+                "angle": "70"
+            }
+        ],
+        "else": [
+            {
+                "type": "servo",
+                "name": "SERVO",
+                "angle": "15"
+            }
+        ]
     }
 ]
