@@ -255,6 +255,16 @@ function parse(container) {
 
 function exportJSON() {
     // document.getElementById("output").textContent = JSON.stringify(parse(workspace), null, 2);
-
-    console.log(JSON.stringify(parse(workspace)));
+    fetch("./send_to_board", {
+      method: 'POST',
+      body: JSON.stringify({
+        setup: pin_json,
+        steps: parse(workspace)
+      }),
+      headers: {
+      "Content-type": "application/json; charset=UTF-8"
+    }
+    })
+    console.log("Sending to backend");
+    // console.log(JSON.stringify(parse(workspace)));
 }

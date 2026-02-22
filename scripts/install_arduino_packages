@@ -1,0 +1,10 @@
+#!/bin/bash
+
+main_command="arduino-cli"
+
+if command -v "$main_command" 2/&1; then
+    echo "arduino-cli exists"
+else
+    echo "arduino-cli does not exists"
+    exit 1
+fi
