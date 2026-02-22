@@ -1,5 +1,17 @@
-pin_mode 42 input
-pin_write 53 on
-set_variable 1012 
-loop 204 []
-if  [] []
+#include <Stepper.h>
+#include <Servo.h>
+#include <LED.h>
+
+Servo SERVO;
+Servo second_servo;
+void setup() {
+
+SERVO.attach(D11);
+second_servo.attach(D9);
+}
+
+void loop() {
+
+D9.write(45);
+delay(100);
+}
