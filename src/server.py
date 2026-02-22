@@ -32,6 +32,7 @@ class Server:
                 
                 with open(os.path.join(self.json_loc,'steps.json'), 'w') as json_file:
                     json.dump(steps, json_file,  indent=4)
+                    # Add the converison functions in here
                 return "Success", 200
             else:
                 return "not post", 404

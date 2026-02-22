@@ -1,43 +1,7 @@
 [
     {
         "type": "pin_write",
+        "pin": "D12",
         "value": "on"
-    },
-    {
-        "type": "servo",
-        "name": "SERVO",
-        "angle": ""
-    },
-    {
-        "type": "motor",
-        "value": "on"
-    },
-    {
-        "type": "output",
-        "to_var": "",
-        "from_pin": "D4"
-    },
-    {
-        "type": "servo",
-        "name": "SERVO",
-        "angle": ""
-    },
-    {
-        "type": "motor",
-        "value": "on"
-    },
-    {
-        "type": "output",
-        "to_var": "",
-        "from_pin": "D4"
-    },
-    {
-        "type": "set_variable",
-        "name": "",
-        "value": ""
-    },
-    {
-        "type": "define_variable",
-        "name": "kl"
     }
 ]
