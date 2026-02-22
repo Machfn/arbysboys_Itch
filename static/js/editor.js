@@ -253,9 +253,11 @@ function parse(container) {
   });
 }
 
-function exportJSON() {
-    // document.getElementById("output").textContent = JSON.stringify(parse(workspace), null, 2);
-    fetch("./send_to_board", {
+async function exportJSON() {
+    let out = document.getElementById("output")
+    out.innerHTML = `<div class="outbar loading">Compiling & Uploading to board</div>`;
+
+    let response = await fetch("./send_to_board", {
       method: 'POST',
       body: JSON.stringify({
         setup: pin_json,
@@ -265,6 +267,11 @@ function exportJSON() {
       "Content-type": "application/json; charset=UTF-8"
     }
     })
+    if (response.status == 404) {
+      out.innerHTML += `<div class="outbar success">Success</div>`
+    } else {
+      out.innerHTML += `<div class="outbar error">Error Compiling or Uploading</div>`
+    }
     console.log("Sending to backend");
     // console.log(JSON.stringify(parse(workspace)));
 }

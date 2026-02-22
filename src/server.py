@@ -48,7 +48,11 @@ class Server:
                 j.action_parse(action_data)
                 sd = Finish(os.path.join(self.json_loc, "../output_files"))
                 result = sd.find_board()
-                return "Success", 200
+                print(result)
+                if result:
+                    return "Success", 200
+                else:
+                    return "Error", 404
             else:
                 return "not post", 404
 

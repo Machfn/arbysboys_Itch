@@ -1,26 +1,7 @@
 [
     {
         "type": "pin_write",
-        "pin": "D21",
+        "pin": "D9",
         "value": "on"
-    },
-    {
-        "type": "motor",
-        "name": "MOTOR",
-        "value": "on"
-    },
-    {
-        "type": "define_variable",
-        "name": "lk"
-    },
-    {
-        "type": "set_variable",
-        "name": "lk",
-        "value": "40"
-    },
-    {
-        "type": "output",
-        "to_var": "lk",
-        "from_pin": "D11"
     }
 ]

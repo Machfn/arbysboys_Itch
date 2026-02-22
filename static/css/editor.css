@@ -108,3 +108,19 @@ select, input {
   border-radius: 10px;
   padding: 40px;
 }
+.outbar {
+  width: 100%;
+  padding: 20px;
+  margin-top: 5px;
+  border-radius: 10px;
+  color: white;
+}
+.success {
+  background-color: rgba(0, 123, 0, 0.6);
+}
+.loading {
+  background-color: rgba(229, 200, 36, 0.6);
+}
+.success {
+  background-color: rgba(20, 105, 20, 0.6);
+}
