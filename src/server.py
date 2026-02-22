@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 
 class Server:
     def __init__(self, temp_folder, stat_fold):
@@ -14,6 +14,12 @@ class Server:
         @self.server.route("/editor")
         def editor():
             return render_template("editor/index.html")
+        
+        @self.server.route("/send_to_board", methods=['POST'])
+        def send_to_backend():
+            if request.method == 'POST':
+                print("here")
+
 
     def start(self):
         self.server.run()
