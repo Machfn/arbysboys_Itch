@@ -1,7 +1,6 @@
 import json
 import os
 
-# def convert():
 class Json():
    def __init__(self,setup,action,output_files):
        self.output_files = output_files
@@ -102,17 +101,3 @@ class Json():
             loopy(data)
             c.write("}\n")
               
-       
-
-
-# destination = os.path.join(os.getcwd(),"../" ,"output_files", "output_files.ino")
-
-# j = Json("setup.json", "steps.json",destination)
-
-# j.empty_file()
-# j.libraries()
-# setup_data = j.open_file("input.json")
-# j.setup_parse_global(setup_data)
-# j.setup_parse_function(setup_data)
-# action_data = j.open_file("test.json")
-# j.action_parse(action_data)
