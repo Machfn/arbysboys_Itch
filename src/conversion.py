@@ -43,11 +43,11 @@ class Json():
                     s.write(f"{k}.attach({v[1:]});\n")
             if data[2]:
                 for v in data[2].values():
-                    s.write(f"pinMode({v}, INPUT);\n")
+                    s.write(f"pinMode({v[1:]}, INPUT);\n")
             
             if data[3]:
                 for v in data[3].values():
-                    s.write(f"pinMode({v}, OUTPUT);\n")
+                    s.write(f"pinMode({v[1:]}, OUTPUT);\n")
             
             s.write("}\n\n")
 
@@ -61,7 +61,9 @@ class Json():
                 
                     if (type_ == "pin_write"):
                         if (i["value"] == "on"):
-                            c.write(f"pinMode({i["pin"][1:]}, HIGH)") # come back later with pin
+                            c.write(f"pinWrite({i["pin"][1:]}, HIGH);\n") 
+                        if (i["value"] == "off"):
+                            c.write(f"pinWrite({i["pin"][1:]}, LOW);\n")
 
                     if (type_ == "set_variable"):
                         c.write(f"{i["name"]} = {i["value"]};\n")
