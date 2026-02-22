@@ -223,7 +223,7 @@ function parse(container) {
     } else if (b.classList.contains("motor")) { //b.querySelector(".pin") && b.querySelector(".value")
       return {
         type: "motor",
-        pin: MOTORS[b.querySelector(".name").value],
+        name: b.querySelector(".name").value,
         value: b.querySelector(".state").value
       };
     } else if (b.classList.contains("var")) {
