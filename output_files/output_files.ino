@@ -6,12 +6,12 @@ Servo SERVO;
 Servo second_servo;
 void setup() {
 
-SERVO.attach(D11);
-second_servo.attach(D9);
+SERVO.attach(11);
+second_servo.attach(9);
 }
 
 void loop() {
 
-D9.write(45);
+SERVO.write(45);
 delay(100);
 }

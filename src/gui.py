@@ -19,6 +19,6 @@ class GUI:
         server_thread.start()
         webview.create_window(self.title, "http://localhost:5000/", min_size=self.min_size, fullscreen=True)
         webview.start(debug=True)
-        # server_thread.join()
+        server_thread.join()
         sys.exit(0)
 
